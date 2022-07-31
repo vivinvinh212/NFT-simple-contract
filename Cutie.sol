@@ -10,6 +10,8 @@ contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
+
+    // Define naximum supply, mint price and maximum mint per transactions of NFT
     uint256 MAX_SUPPLY = 100;
     uint mintPrice = 0.01 ether;
     uint maxPerTransaction = 5;
@@ -22,12 +24,13 @@ contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
         require(msg.value == mintPrice, "Not Enough Ether");
         require(mintAmount > 0);
         require(mintAmount <= maxPerTransaction);
-        require(supply + _mintAmount <= maxSupply);
+        require(supply + mintAmount <= maxSupply);
 
+        // Minter who are not owner have to pay the mint price
         if (msg.sender != owner()) {
             require(msg.value >= mintPrice * mintAmount);
             for (uint256 i = 1; i <= mintAmount; i++) {
-                _safeMint(_to, supply + i);
+                _safeMint(to, supply + i);
                     _tokenIdCounter.increment();
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
