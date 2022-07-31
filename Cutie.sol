@@ -17,13 +17,21 @@ contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     constructor() ERC721("Cutie", "CUTE") {}
 
-    function safeMint(address to, string memory uri) public payable {
+    function safeMint(address to, string memory uri, uint256 mintAmount) public payable {
         uint256 tokenId = _tokenIdCounter.current();
         require(msg.value == mintPrice, "Not Enough Ether");
-        require(tokenId <= MAX_SUPPLY, "Sorry, all minted");
-        _tokenIdCounter.increment();
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
+        require(mintAmount > 0);
+        require(mintAmount <= maxPerTransaction);
+        require(supply + _mintAmount <= maxSupply);
+
+        if (msg.sender != owner()) {
+            require(msg.value >= mintPrice * mintAmount);
+            for (uint256 i = 1; i <= mintAmount; i++) {
+                _safeMint(_to, supply + i);
+                    _tokenIdCounter.increment();
+                    _safeMint(to, tokenId);
+                    _setTokenURI(tokenId, uri);
+            }
     }
 
     // The following functions are overrides required by Solidity.
