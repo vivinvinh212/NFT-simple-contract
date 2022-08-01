@@ -12,30 +12,38 @@ contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     Counters.Counter private _tokenIdCounter;
 
+    string public constant TOKEN_URI = "ipfs://QmZvBFsTFhfR75bEVitGVHcqCCkR5WgYmgHVNihH5nmejN";
+
     // Define naximum supply, mint price and maximum mint per transactions of NFT
     uint256 MAX_SUPPLY = 100;
     uint mintPrice = 0.01 ether;
     uint maxPerTransaction = 5;
 
 
-    constructor() ERC721("Cutie", "CUTE") {}
-
-    function safeMint(address to, string memory uri, uint256 mintAmount) public payable {        
-        require(mintAmount > 0);
-        require(mintAmount <= maxPerTransaction);
-        require(supply + mintAmount <= maxSupply);
-        require(msg.value >= mintPrice * mintAmount);
-
-        for (uint256 i = 1; i <= mintAmount; i++) {
-            uint256 tokenId = _tokenIdCounter.current();
-            _safeMint(to, supply + i);
-            _tokenIdCounter.increment();
-            _safeMint(to, tokenId);
-            _setTokenURI(tokenId, uri);
+    constructor() ERC721("Cutie", "CUTE") {
     }
 
-    function withdraw() public onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+    function safeMint(uint256 mintAmount) public payable { 
+           
+        require(mintAmount > 0, "Must mint at least 1");
+        require(mintAmount <= maxPerTransaction, "Maximum 5 nfts allowed in a transaction");
+        require(tokenId + mintAmount <= maxSupply, "Supply is not enough");
+        require(msg.value >= mintPrice * mintAmount; "Insufficient balance");
+
+        for (uint256 i = 1; i <= mintAmount; i++) {
+            _tokenIdCounter.increment();
+            uint256 tokenId = _tokenIdCounter.current(); 
+            _safeMint(msg.sender, tokenId);
+            _setTokenURI(tokenId, uri);
+        }
+        return tokenId;
+    }
+
+    function withdraw() public payable onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "Not enough balance");
+        (bool status, ) = (msg.sender).call{value: balance}("");
+        require(status, "Withdraw failed");
     }
 
     // The following functions are overrides required by Solidity.
