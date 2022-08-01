@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
     using Counters for Counters.Counter;
@@ -19,22 +20,22 @@ contract Cutie is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     constructor() ERC721("Cutie", "CUTE") {}
 
-    function safeMint(address to, string memory uri, uint256 mintAmount) public payable {
-        uint256 tokenId = _tokenIdCounter.current();
-        require(msg.value == mintPrice, "Not Enough Ether");
+    function safeMint(address to, string memory uri, uint256 mintAmount) public payable {        
         require(mintAmount > 0);
         require(mintAmount <= maxPerTransaction);
         require(supply + mintAmount <= maxSupply);
+        require(msg.value >= mintPrice * mintAmount);
 
-        // Minter who are not owner have to pay the mint price
-        if (msg.sender != owner()) {
-            require(msg.value >= mintPrice * mintAmount);
-            for (uint256 i = 1; i <= mintAmount; i++) {
-                _safeMint(to, supply + i);
-                    _tokenIdCounter.increment();
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-            }
+        for (uint256 i = 1; i <= mintAmount; i++) {
+            uint256 tokenId = _tokenIdCounter.current();
+            _safeMint(to, supply + i);
+            _tokenIdCounter.increment();
+            _safeMint(to, tokenId);
+            _setTokenURI(tokenId, uri);
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 
     // The following functions are overrides required by Solidity.
