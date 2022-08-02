@@ -1,2 +1,2 @@
 # NFT-simple-contract
-Deployed rinkeby chain contract: https://rinkeby.etherscan.io/address/0x91b8f20a9f033fab0a46df40a16cb4180cc37ca5
+Deployed Goerli chain contract: https://goerli.etherscan.io/address/0x207C1103b26714fE201692BEbe9c6ecA94F65197#code
